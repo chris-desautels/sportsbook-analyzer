@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Betting Value Finder{% endblock %}
+
+{% block content %}
+  <section class="grid gap-4 md:grid-cols-4">
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <p class="text-xs uppercase text-slate-400">Last fetch</p>
+      <p class="text-lg font-semibold">{{ status.last_fetch_time or "Not yet" }}</p>
+    </div>
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <p class="text-xs uppercase text-slate-400">Next fetch</p>
+      <p class="text-lg font-semibold">{{ status.next_fetch_time or "Unknown" }}</p>
+    </div>
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <p class="text-xs uppercase text-slate-400">Scheduler</p>
+      <p class="text-lg font-semibold">
+        {{ "Running" if status.scheduler_running else "Stopped" }}
+      </p>
+    </div>
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <p class="text-xs uppercase text-slate-400">Fetch status</p>
+      <p class="text-lg font-semibold">
+        {% if status.last_fetch_success is none %}
+          Pending
+        {% elif status.last_fetch_success %}
+          Successful
+        {% else %}
+          Failed
+        {% endif %}
+      </p>
+    </div>
+  </section>
+
+  <section class="mt-8 grid gap-6 lg:grid-cols-2">
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Arbitrage Opportunities</h2>
+        <span class="text-xs text-slate-400">{{ arbitrage|length }} active</span>
+      </div>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-sm" data-sortable="true">
+          <thead class="text-left text-slate-400">
+            <tr>
+              <th data-sort class="py-2">Game</th>
+              <th data-sort class="py-2">Profit %</th>
+              <th class="py-2">Books</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for arb in arbitrage %}
+              <tr class="border-t border-slate-800">
+                <td class="py-2">{{ arb.game.home_team }} vs {{ arb.game.away_team }}</td>
+                <td class="py-2 text-emerald-400">{{ "%.2f"|format(arb.profit_percentage) }}</td>
+                <td class="py-2 text-slate-300">
+                  {{ arb.bet_details.home.bookmaker }} / {{ arb.bet_details.away.bookmaker }}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td class="py-4 text-slate-400" colspan="3">No arbitrage opportunities yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Value Bets</h2>
+        <span class="text-xs text-slate-400">{{ value_bets|length }} tracked</span>
+      </div>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-sm" data-sortable="true">
+          <thead class="text-left text-slate-400">
+            <tr>
+              <th data-sort class="py-2">Game</th>
+              <th data-sort class="py-2">Edge %</th>
+              <th class="py-2">Book</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for value in value_bets %}
+              <tr class="border-t border-slate-800">
+                <td class="py-2">{{ value.game.home_team }} vs {{ value.game.away_team }}</td>
+                <td class="py-2 text-emerald-400">{{ "%.2f"|format(value.edge_percentage) }}</td>
+                <td class="py-2 text-slate-300">{{ value.bookmaker }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td class="py-4 text-slate-400" colspan="3">No value bets detected.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-8 rounded-lg border border-slate-800 bg-slate-900 p-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold">Upcoming Games</h2>
+      <span class="text-xs text-slate-400">{{ upcoming_games|length }} upcoming</span>
+    </div>
+    <div class="mt-4 space-y-6">
+      {% for game in upcoming_games %}
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <a href="/games/{{ game.id }}" class="text-base font-semibold hover:text-white">
+                {{ game.home_team }} vs {{ game.away_team }}
+              </a>
+              <p class="text-xs text-slate-400">{{ game.commence_time }}</p>
+            </div>
+            <span class="text-xs text-slate-400">{{ game.sport.name }}</span>
+          </div>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full text-xs" data-sortable="true">
+              <thead class="text-left text-slate-400">
+                <tr>
+                  <th data-sort class="py-2">Book</th>
+                  <th data-sort class="py-2">Market</th>
+                  <th data-sort class="py-2">Home</th>
+                  <th data-sort class="py-2">Away</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for odds in odds_by_game[game.id] %}
+                  <tr class="border-t border-slate-800">
+                    <td class="py-2">{{ odds.bookmaker }}</td>
+                    <td class="py-2">{{ odds.market_type }}</td>
+                    <td class="py-2">{{ odds.home_price }}</td>
+                    <td class="py-2">{{ odds.away_price }}</td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td class="py-4 text-slate-400" colspan="4">No odds yet.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-slate-400">No upcoming games.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

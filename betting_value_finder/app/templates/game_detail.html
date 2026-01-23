@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ game.home_team }} vs {{ game.away_team }} | Betting Value Finder{% endblock %}
+
+{% block content %}
+  <section class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+    <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">{{ game.home_team }} vs {{ game.away_team }}</h1>
+        <p class="text-sm text-slate-400">{{ game.commence_time }}</p>
+      </div>
+      <span class="text-xs text-slate-400">{{ game.sport.name }}</span>
+    </div>
+  </section>
+
+  <section class="mt-6 rounded-lg border border-slate-800 bg-slate-900 p-4">
+    <h2 class="text-lg font-semibold">Odds Comparison</h2>
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full text-sm" data-sortable="true">
+        <thead class="text-left text-slate-400">
+          <tr>
+            <th data-sort class="py-2">Timestamp</th>
+            <th data-sort class="py-2">Bookmaker</th>
+            <th data-sort class="py-2">Market</th>
+            <th data-sort class="py-2">Home</th>
+            <th data-sort class="py-2">Away</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for snap in odds %}
+            <tr class="border-t border-slate-800">
+              <td class="py-2 text-xs">{{ snap.timestamp }}</td>
+              <td class="py-2">{{ snap.bookmaker }}</td>
+              <td class="py-2">{{ snap.market_type }}</td>
+              <td class="py-2">{{ snap.home_price }}</td>
+              <td class="py-2">{{ snap.away_price }}</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td class="py-4 text-slate-400" colspan="5">No odds snapshots yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mt-6 rounded-lg border border-slate-800 bg-slate-900 p-4">
+    <h2 class="text-lg font-semibold">Line Movement</h2>
+    <div class="mt-4">
+      <div id="chart-loading" class="text-sm text-slate-400">Loading chart data...</div>
+      <canvas id="line-movement-chart" class="mt-2 hidden"></canvas>
+    </div>
+  </section>
+
+  <section class="mt-6 grid gap-6 lg:grid-cols-2">
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-lg font-semibold">Arbitrage History</h2>
+      <div class="mt-4 space-y-2 text-sm">
+        {% for arb in arbitrage %}
+          <div class="flex items-center justify-between rounded border border-slate-800 bg-slate-950 px-3 py-2">
+            <span>{{ arb.detected_at }}</span>
+            <span class="text-emerald-400">{{ "%.2f"|format(arb.profit_percentage) }}%</span>
+          </div>
+        {% else %}
+          <p class="text-slate-400">No arbitrage detections yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-lg font-semibold">Value Bet History</h2>
+      <div class="mt-4 space-y-2 text-sm">
+        {% for value in value_bets %}
+          <div class="flex items-center justify-between rounded border border-slate-800 bg-slate-950 px-3 py-2">
+            <span>{{ value.detected_at }}</span>
+            <span class="text-emerald-400">{{ "%.2f"|format(value.edge_percentage) }}%</span>
+          </div>
+        {% else %}
+          <p class="text-slate-400">No value detections yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    fetch(`/api/games/{{ game.id }}/history`)
+      .then((response) => response.json())
+      .then((data) => {
+        document.getElementById('chart-loading').classList.add('hidden');
+        const canvas = document.getElementById('line-movement-chart');
+        canvas.classList.remove('hidden');
+        renderLineMovementChart(canvas, data);
+      })
+      .catch(() => {
+        document.getElementById('chart-loading').innerText =
+          'Unable to load chart data.';
+      });
+  </script>
+{% endblock %}
