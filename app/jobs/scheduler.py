@@ -17,20 +17,23 @@ logger = logging.getLogger(__name__)
 _scheduler: BackgroundScheduler | None = None
 _last_fetch_time: datetime | None = None
 _last_fetch_success: bool | None = None
+_current_fetch_interval: int | None = None
 
 
 def init_scheduler(app: Flask) -> None:
     """Initialize APScheduler and register jobs."""
     global _scheduler
+    global _current_fetch_interval
 
     if _scheduler:
         return
 
     scheduler = BackgroundScheduler()
+    interval_minutes = _select_fetch_interval(app)
     scheduler.add_job(
         func=lambda: _fetch_and_analyze(app),
         trigger="interval",
-        minutes=app.config["FETCH_INTERVAL_MINUTES"],
+        minutes=interval_minutes,
         id="fetch_odds",
         replace_existing=True,
     )
@@ -43,6 +46,7 @@ def init_scheduler(app: Flask) -> None:
     )
     scheduler.start()
     _scheduler = scheduler
+    _current_fetch_interval = interval_minutes
 
 
 def get_status() -> dict:
@@ -80,6 +84,7 @@ def _fetch_and_analyze(app: Flask) -> None:
         with app.app_context():
             _persist_snapshots(snapshots)
             _run_detection(app)
+            _update_fetch_schedule(app)
         _last_fetch_time = datetime.utcnow()
         _last_fetch_success = True
     except Exception:
@@ -192,3 +197,39 @@ def _cleanup_old_data(app: Flask) -> None:
         ).delete()
         db.session.commit()
         logger.info("Deleted %s old odds snapshots.", deleted)
+
+
+def _select_fetch_interval(app: Flask) -> int:
+    now = datetime.utcnow()
+    next_game = (
+        Game.query.filter(Game.commence_time >= now, Game.completed.is_(False))
+        .order_by(Game.commence_time.asc())
+        .first()
+    )
+    if not next_game:
+        return app.config["FETCH_INTERVAL_DEFAULT_MINUTES"]
+
+    hours_to_game = (next_game.commence_time - now).total_seconds() / 3600
+    if hours_to_game <= app.config["FETCH_INTERVAL_IMMINENT_HOURS"]:
+        return app.config["FETCH_INTERVAL_IMMINENT_MINUTES"]
+    if hours_to_game <= app.config["FETCH_INTERVAL_NEAR_HOURS"]:
+        return app.config["FETCH_INTERVAL_NEAR_MINUTES"]
+    return app.config["FETCH_INTERVAL_DEFAULT_MINUTES"]
+
+
+def _update_fetch_schedule(app: Flask) -> None:
+    global _current_fetch_interval
+    if not _scheduler:
+        return
+
+    interval_minutes = _select_fetch_interval(app)
+    if _current_fetch_interval == interval_minutes:
+        return
+
+    job = _scheduler.get_job("fetch_odds")
+    if not job:
+        return
+
+    job.reschedule(trigger="interval", minutes=interval_minutes)
+    _current_fetch_interval = interval_minutes
+    logger.info("Adjusted fetch interval to %s minutes.", interval_minutes)

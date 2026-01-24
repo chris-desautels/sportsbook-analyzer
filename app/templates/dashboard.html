@@ -123,7 +123,80 @@
               </a>
               <p class="text-xs text-slate-400">{{ game.commence_time }}</p>
             </div>
-            <span class="text-xs text-slate-400">{{ game.sport.name }}</span>
+            <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+              {% if steam_moves_by_game[game.id] %}
+                <span class="rounded-full bg-amber-500/20 px-2 py-1 text-amber-300">Steam move</span>
+              {% endif %}
+              {% if game.id in pinned_ids %}
+                <span class="rounded-full bg-indigo-500/20 px-2 py-1 text-indigo-300">Pinned</span>
+              {% endif %}
+              <span>{{ game.sport.name }}</span>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            {% if game.id in pinned_ids %}
+              <form action="/games/{{ game.id }}/unpin" method="post">
+                <button
+                  type="submit"
+                  class="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-slate-500"
+                >
+                  Unpin
+                </button>
+              </form>
+            {% else %}
+              <form action="/games/{{ game.id }}/pin" method="post">
+                <button
+                  type="submit"
+                  class="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-slate-500"
+                >
+                  Pin
+                </button>
+              </form>
+            {% endif %}
+          </div>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full text-xs" data-sortable="true">
+              <thead class="text-left text-slate-400">
+                <tr>
+                  <th class="py-2">Best lines</th>
+                  <th class="py-2">Home / Over</th>
+                  <th class="py-2">Away / Under</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for market_type, lines in best_lines_by_game[game.id].items() %}
+                  <tr class="border-t border-slate-800">
+                    <td class="py-2">{{ market_type }}</td>
+                    <td class="py-2">
+                      {% if lines.home %}
+                        {{ lines.home.price }}
+                        {% if lines.home.point is not none %} ({{ lines.home.point }}){% endif %}
+                        - {{ lines.home.bookmaker }}
+                      {% elif lines.over %}
+                        {{ lines.over.price }}
+                        {% if lines.over.point is not none %} ({{ lines.over.point }}){% endif %}
+                        - {{ lines.over.bookmaker }}
+                      {% endif %}
+                    </td>
+                    <td class="py-2">
+                      {% if lines.away %}
+                        {{ lines.away.price }}
+                        {% if lines.away.point is not none %} ({{ lines.away.point }}){% endif %}
+                        - {{ lines.away.bookmaker }}
+                      {% elif lines.under %}
+                        {{ lines.under.price }}
+                        {% if lines.under.point is not none %} ({{ lines.under.point }}){% endif %}
+                        - {{ lines.under.bookmaker }}
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td class="py-4 text-slate-400" colspan="3">No best lines yet.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
           <div class="mt-4 overflow-x-auto">
             <table class="w-full text-xs" data-sortable="true">

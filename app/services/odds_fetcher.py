@@ -44,8 +44,9 @@ class OddsFetcher:
             "markets": "h2h,spreads,totals",
             "oddsFormat": "american",
         }
-        response = _request_with_retries(url, params=params)
+        response = _request_with_retries(url, params=params, context=f"sport={sport_key}")
         if response is None:
+            logger.warning("Odds API request failed for %s; skipping.", sport_key)
             return []
 
         _log_rate_limit(response.headers)
@@ -53,7 +54,9 @@ class OddsFetcher:
         return _parse_odds_payloads(sport_key, data)
 
 
-def _request_with_retries(url: str, params: dict[str, Any]) -> requests.Response | None:
+def _request_with_retries(
+    url: str, params: dict[str, Any], context: str
+) -> requests.Response | None:
     """Perform a GET request with exponential backoff."""
     delays = [1, 2, 4]
     for attempt, delay in enumerate(delays, start=1):
@@ -62,7 +65,9 @@ def _request_with_retries(url: str, params: dict[str, Any]) -> requests.Response
             response.raise_for_status()
             return response
         except requests.RequestException as exc:
-            logger.warning("Odds API request failed (attempt %s): %s", attempt, exc)
+            logger.warning(
+                "Odds API request failed (attempt %s, %s): %s", attempt, context, exc
+            )
             if attempt == len(delays):
                 break
             time_to_sleep = delay

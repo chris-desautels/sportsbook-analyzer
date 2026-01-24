@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify
 
 from app.jobs.scheduler import get_status
 from app.models import ArbitrageOpportunity, Game, OddsSnapshot, ValueBet
+from app.services.odds_insights import latest_snapshots_for_game
 
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -58,7 +59,7 @@ def games():
 
     data = []
     for game in upcoming_games:
-        latest_odds = _latest_odds_for_game(game.id)
+        latest_odds = latest_snapshots_for_game(game.id)
         data.append(
             {
                 "id": game.id,
@@ -112,17 +113,4 @@ def status():
 
 
 def _latest_odds_for_game(game_id: int) -> list[OddsSnapshot]:
-    snapshots = (
-        OddsSnapshot.query.filter_by(game_id=game_id)
-        .order_by(OddsSnapshot.timestamp.desc())
-        .all()
-    )
-    seen = set()
-    latest = []
-    for snapshot in snapshots:
-        key = (snapshot.bookmaker, snapshot.market_type)
-        if key in seen:
-            continue
-        seen.add(key)
-        latest.append(snapshot)
-    return latest
+    return latest_snapshots_for_game(game_id)
