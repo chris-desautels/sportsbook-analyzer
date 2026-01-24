@@ -10,9 +10,11 @@ def test_api_status(client):
 
 
 def test_api_games_and_history(client, app, sample_game):
+    # sample_game is now the game ID (int), not the ORM object
+    game_id = sample_game
     with app.app_context():
         snapshot = OddsSnapshot(
-            game_id=sample_game.id,
+            game_id=game_id,
             bookmaker="Book A",
             market_type="h2h",
             timestamp=datetime.utcnow(),
@@ -26,21 +28,23 @@ def test_api_games_and_history(client, app, sample_game):
     assert games_response.status_code == 200
     assert games_response.json
 
-    history_response = client.get(f"/api/games/{sample_game.id}/history")
+    history_response = client.get(f"/api/games/{game_id}/history")
     assert history_response.status_code == 200
     assert history_response.json
 
 
 def test_api_opportunities(client, app, sample_game):
+    # sample_game is now the game ID (int), not the ORM object
+    game_id = sample_game
     with app.app_context():
         arb = ArbitrageOpportunity(
-            game_id=sample_game.id,
+            game_id=game_id,
             profit_percentage=1.5,
             resolved=False,
             bet_details={"home": {"bookmaker": "A"}, "away": {"bookmaker": "B"}},
         )
         value = ValueBet(
-            game_id=sample_game.id,
+            game_id=game_id,
             bookmaker="Book A",
             market_type="h2h",
             edge_percentage=3.2,

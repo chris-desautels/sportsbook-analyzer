@@ -1,0 +1,45 @@
+# =============================================================================
+# .dockerignore - Files to exclude when copying into the Docker image
+# =============================================================================
+# Like .gitignore but for Docker. Keeps your images small and secure.
+# =============================================================================
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+ENV
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+.tox
+
+# Local development
+.env
+*.db
+instance/
+
+# Documentation
+*.md
+!README.md
+
+# Docker (don't copy Docker files into the image)
+Dockerfile
+docker-compose.yml
+.dockerignore

@@ -3,18 +3,88 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  tests:
+  # ---------------------------------------------------------------------------
+  # Linting - Check code style and common errors
+  # ---------------------------------------------------------------------------
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
+
+      - name: Install linting tools
+        run: pip install ruff black
+
+      - name: Check formatting with Black
+        run: black --check .
+
+      - name: Lint with Ruff
+        run: ruff check .
+
+  # ---------------------------------------------------------------------------
+  # Type Checking - Static type analysis
+  # ---------------------------------------------------------------------------
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run tests
-        run: pytest
+
+      - name: Type check with mypy
+        run: mypy app --ignore-missing-imports
+        continue-on-error: true  # Don't fail CI on type errors (for now)
+
+  # ---------------------------------------------------------------------------
+  # Tests - Run pytest with coverage
+  # ---------------------------------------------------------------------------
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false  # Don't fail if codecov upload fails
+        continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # Docker Build - Verify the Docker image builds successfully
+  # ---------------------------------------------------------------------------
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t betting-value-finder .

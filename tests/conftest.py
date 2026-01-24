@@ -13,6 +13,7 @@ def app():
             "TESTING": True,
             "SQLALCHEMY_DATABASE_URI": "sqlite://",
             "ODDS_API_KEY": "test",
+            "SECRET_KEY": "test-secret-key-for-testing-only",
         }
     )
     with test_app.app_context():
@@ -29,6 +30,11 @@ def client(app):
 
 @pytest.fixture()
 def sample_game(app):
+    """Create a sample game and return its ID (not the ORM object).
+    
+    Returns the game ID to avoid SQLAlchemy DetachedInstanceError when
+    the game object is accessed outside the app context.
+    """
     with app.app_context():
         sport = Sport(key="americanfootball_nfl", name="NFL", active=True)
         db.session.add(sport)
@@ -43,4 +49,5 @@ def sample_game(app):
         )
         db.session.add(game)
         db.session.commit()
-        return game
+        # Return the ID, not the object, to avoid DetachedInstanceError
+        return game.id

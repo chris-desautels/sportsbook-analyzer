@@ -1,0 +1,39 @@
+# =============================================================================
+# docker-compose.yml - Orchestrate multiple containers with one command
+# =============================================================================
+# Instead of typing long `docker run` commands, you define everything here
+# and just run: docker-compose up
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Your Flask web application
+  # ---------------------------------------------------------------------------
+  web:
+    # Build the image using the Dockerfile in the current directory
+    build: .
+    
+    # Map port 5000 on your machine to port 5000 in the container
+    # So you can access http://localhost:5000
+    ports:
+      - "5000:5000"
+    
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    
+    # Mount your code into the container (changes reflect immediately)
+    # Great for development - no need to rebuild on every code change
+    volumes:
+      - .:/app
+      - ./instance:/app/instance  # Persist SQLite database
+    
+    # Override the CMD for development (use Flask's dev server with reload)
+    command: flask run --host=0.0.0.0 --reload
+    
+    # Set environment variables directly (these override .env file)
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_DEBUG=1

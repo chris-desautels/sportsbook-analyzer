@@ -38,6 +38,13 @@ def create_app(test_config: dict | None = None) -> Flask:
     if not app.config.get("TESTING") and app.config.get("ENABLE_SCHEDULER"):
         init_scheduler(app)
 
+    if not app.config.get("TESTING"):
+        if not app.config.get("SECRET_KEY"):
+            raise ValueError(
+                "SECRET_KEY environment variable is required. "
+                'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"'
+            )
+
     if not app.config.get("ODDS_API_KEY"):
         logging.getLogger(__name__).warning(
             "ODDS_API_KEY is not set; odds fetching will be disabled."

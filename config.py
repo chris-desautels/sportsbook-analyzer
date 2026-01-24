@@ -4,7 +4,9 @@ import os
 class Config:
     """Application configuration loaded from environment variables."""
 
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev")
+    # SECRET_KEY must be set via environment variable or test config
+    # Generate one with: python -c "import secrets; print(secrets.token_hex(32))"
+    SECRET_KEY = os.environ.get("SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///betting.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

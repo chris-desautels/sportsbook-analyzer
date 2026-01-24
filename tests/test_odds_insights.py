@@ -5,12 +5,14 @@ from app.services.odds_insights import best_lines_for_game, detect_steam_moves
 
 
 def test_best_lines_for_game_uses_latest_snapshots(app, sample_game):
+    # sample_game is now the game ID (int), not the ORM object
+    game_id = sample_game
     now = datetime.utcnow()
     with app.app_context():
         db.session.add_all(
             [
                 OddsSnapshot(
-                    game_id=sample_game.id,
+                    game_id=game_id,
                     bookmaker="Book A",
                     market_type="h2h",
                     timestamp=now - timedelta(minutes=10),
@@ -18,7 +20,7 @@ def test_best_lines_for_game_uses_latest_snapshots(app, sample_game):
                     away_price=-220,
                 ),
                 OddsSnapshot(
-                    game_id=sample_game.id,
+                    game_id=game_id,
                     bookmaker="Book A",
                     market_type="h2h",
                     timestamp=now - timedelta(minutes=1),
@@ -26,7 +28,7 @@ def test_best_lines_for_game_uses_latest_snapshots(app, sample_game):
                     away_price=-120,
                 ),
                 OddsSnapshot(
-                    game_id=sample_game.id,
+                    game_id=game_id,
                     bookmaker="Book B",
                     market_type="h2h",
                     timestamp=now - timedelta(minutes=2),
@@ -37,18 +39,20 @@ def test_best_lines_for_game_uses_latest_snapshots(app, sample_game):
         )
         db.session.commit()
 
-        best_lines = best_lines_for_game(sample_game.id)
+        best_lines = best_lines_for_game(game_id)
         assert best_lines["h2h"]["home"].bookmaker == "Book B"
         assert best_lines["h2h"]["home"].price == 130
 
 
 def test_best_lines_for_spreads_and_totals(app, sample_game):
+    # sample_game is now the game ID (int), not the ORM object
+    game_id = sample_game
     now = datetime.utcnow()
     with app.app_context():
         db.session.add_all(
             [
                 OddsSnapshot(
-                    game_id=sample_game.id,
+                    game_id=game_id,
                     bookmaker="Book A",
                     market_type="spreads",
                     timestamp=now - timedelta(minutes=1),
@@ -57,7 +61,7 @@ def test_best_lines_for_spreads_and_totals(app, sample_game):
                     home_point=-3.5,
                 ),
                 OddsSnapshot(
-                    game_id=sample_game.id,
+                    game_id=game_id,
                     bookmaker="Book B",
                     market_type="spreads",
                     timestamp=now - timedelta(minutes=1),
@@ -66,7 +70,7 @@ def test_best_lines_for_spreads_and_totals(app, sample_game):
                     home_point=-4.0,
                 ),
                 OddsSnapshot(
-                    game_id=sample_game.id,
+                    game_id=game_id,
                     bookmaker="Book A",
                     market_type="totals",
                     timestamp=now - timedelta(minutes=1),
@@ -75,7 +79,7 @@ def test_best_lines_for_spreads_and_totals(app, sample_game):
                     total_point=48.5,
                 ),
                 OddsSnapshot(
-                    game_id=sample_game.id,
+                    game_id=game_id,
                     bookmaker="Book B",
                     market_type="totals",
                     timestamp=now - timedelta(minutes=1),
@@ -87,7 +91,7 @@ def test_best_lines_for_spreads_and_totals(app, sample_game):
         )
         db.session.commit()
 
-        best_lines = best_lines_for_game(sample_game.id)
+        best_lines = best_lines_for_game(game_id)
         spreads = best_lines["spreads"]
         assert spreads["home"].bookmaker == "Book B"
         assert spreads["home"].price == -105
@@ -106,12 +110,14 @@ def test_best_lines_for_spreads_and_totals(app, sample_game):
 
 
 def test_detect_steam_moves_price(app, sample_game):
+    # sample_game is now the game ID (int), not the ORM object
+    game_id = sample_game
     now = datetime.utcnow()
     snapshots = []
     for book in ("Book A", "Book B", "Book C"):
         snapshots.append(
             OddsSnapshot(
-                game_id=sample_game.id,
+                game_id=game_id,
                 bookmaker=book,
                 market_type="h2h",
                 timestamp=now - timedelta(minutes=12),
@@ -121,7 +127,7 @@ def test_detect_steam_moves_price(app, sample_game):
         )
         snapshots.append(
             OddsSnapshot(
-                game_id=sample_game.id,
+                game_id=game_id,
                 bookmaker=book,
                 market_type="h2h",
                 timestamp=now - timedelta(minutes=2),
@@ -146,10 +152,14 @@ def test_detect_steam_moves_price(app, sample_game):
 
 
 def test_detect_steam_moves_respects_thresholds():
+    """Test that steam detection respects min_price_move and min_books thresholds."""
     now = datetime.utcnow()
-    snapshots = []
+    
+    # Test 1: Small moves (15 points) should NOT trigger steam detection
+    # because they're below the min_price_move=20 threshold
+    small_move_snapshots = []
     for book in ("Book A", "Book B", "Book C"):
-        snapshots.append(
+        small_move_snapshots.append(
             OddsSnapshot(
                 game_id=1,
                 bookmaker=book,
@@ -159,52 +169,89 @@ def test_detect_steam_moves_respects_thresholds():
                 away_price=-110,
             )
         )
-        snapshots.append(
+        small_move_snapshots.append(
             OddsSnapshot(
                 game_id=1,
                 bookmaker=book,
                 market_type="h2h",
                 timestamp=now - timedelta(minutes=2),
-                home_price=115,
+                home_price=115,  # Only 15 point move, below threshold
                 away_price=-110,
             )
         )
 
     steam_moves = detect_steam_moves(
-        snapshots,
+        small_move_snapshots,
         window_minutes=15,
         min_books=3,
         min_price_move=20,
         min_point_move=0.5,
     )
-    assert steam_moves == []
+    assert steam_moves == [], "Small moves below threshold should not trigger"
 
-    snapshots.append(
+    # Test 2: Only 2 books with large moves should NOT trigger
+    # because min_books=3 requires at least 3 books
+    two_book_snapshots = []
+    for book in ("Book A", "Book B"):
+        two_book_snapshots.append(
+            OddsSnapshot(
+                game_id=1,
+                bookmaker=book,
+                market_type="h2h",
+                timestamp=now - timedelta(minutes=10),
+                home_price=100,
+                away_price=-110,
+            )
+        )
+        two_book_snapshots.append(
+            OddsSnapshot(
+                game_id=1,
+                bookmaker=book,
+                market_type="h2h",
+                timestamp=now - timedelta(minutes=2),
+                home_price=130,  # 30 point move, above threshold
+                away_price=-110,
+            )
+        )
+
+    steam_moves = detect_steam_moves(
+        two_book_snapshots,
+        window_minutes=15,
+        min_books=3,
+        min_price_move=20,
+        min_point_move=0.5,
+    )
+    assert steam_moves == [], "Only 2 books should not trigger when min_books=3"
+
+    # Test 3: 3 books with large moves SHOULD trigger
+    three_book_snapshots = list(two_book_snapshots)
+    three_book_snapshots.append(
         OddsSnapshot(
             game_id=1,
-            bookmaker="Book D",
+            bookmaker="Book C",
             market_type="h2h",
             timestamp=now - timedelta(minutes=10),
             home_price=100,
             away_price=-110,
         )
     )
-    snapshots.append(
+    three_book_snapshots.append(
         OddsSnapshot(
             game_id=1,
-            bookmaker="Book D",
+            bookmaker="Book C",
             market_type="h2h",
             timestamp=now - timedelta(minutes=2),
-            home_price=130,
+            home_price=125,  # 25 point move, above threshold
             away_price=-110,
         )
     )
 
     steam_moves = detect_steam_moves(
-        snapshots,
+        three_book_snapshots,
         window_minutes=15,
         min_books=3,
         min_price_move=20,
         min_point_move=0.5,
     )
-    assert any(move["side"] == "home" for move in steam_moves)
+    assert any(move["side"] == "home" for move in steam_moves), \
+        "3 books with large moves should trigger steam detection"
