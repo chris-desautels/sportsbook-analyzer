@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from flask import Blueprint, render_template
+from flask import Blueprint, current_app, redirect, render_template, url_for
 
-from app.jobs.scheduler import get_status
+from app.jobs.scheduler import get_status, run_fetch_now
 from app.models import ArbitrageOpportunity, Game, OddsSnapshot, ValueBet
 
 
@@ -42,6 +42,12 @@ def dashboard():
         upcoming_games=upcoming_games,
         odds_by_game=odds_by_game,
     )
+
+
+@bp.post("/fetch-now")
+def fetch_now():
+    run_fetch_now(current_app)
+    return redirect(url_for("dashboard.dashboard"))
 
 
 def _latest_odds_for_game(game_id: int) -> list[OddsSnapshot]:

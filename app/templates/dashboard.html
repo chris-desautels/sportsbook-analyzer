@@ -2,7 +2,7 @@
 {% block title %}Dashboard | Betting Value Finder{% endblock %}
 
 {% block content %}
-  <section class="grid gap-4 md:grid-cols-4">
+  <section class="grid gap-4 md:grid-cols-5">
     <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
       <p class="text-xs uppercase text-slate-400">Last fetch</p>
       <p class="text-lg font-semibold">{{ status.last_fetch_time or "Not yet" }}</p>
@@ -28,6 +28,17 @@
           Failed
         {% endif %}
       </p>
+    </div>
+    <div class="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <p class="text-xs uppercase text-slate-400">Manual fetch</p>
+      <form action="/fetch-now" method="post" class="mt-2">
+        <button
+          type="submit"
+          class="w-full rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+        >
+          Fetch now
+        </button>
+      </form>
     </div>
   </section>
 

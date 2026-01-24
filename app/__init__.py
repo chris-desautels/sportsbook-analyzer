@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 
+from dotenv import load_dotenv
+
 from flask import Flask
 
 from app.jobs.scheduler import init_scheduler
@@ -11,6 +13,8 @@ from config import Config
 
 def create_app(test_config: dict | None = None) -> Flask:
     """Create and configure the Flask application."""
+
+    load_dotenv()
 
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -31,7 +35,7 @@ def create_app(test_config: dict | None = None) -> Flask:
     app.register_blueprint(games_bp)
     app.register_blueprint(api_bp)
 
-    if not app.config.get("TESTING"):
+    if not app.config.get("TESTING") and app.config.get("ENABLE_SCHEDULER"):
         init_scheduler(app)
 
     if not app.config.get("ODDS_API_KEY"):

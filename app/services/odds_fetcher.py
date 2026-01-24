@@ -42,6 +42,7 @@ class OddsFetcher:
             "apiKey": self.api_key,
             "regions": "us",
             "markets": "h2h,spreads,totals",
+            "oddsFormat": "american",
         }
         response = _request_with_retries(url, params=params)
         if response is None:

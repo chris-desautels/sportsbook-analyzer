@@ -12,6 +12,7 @@ class Config:
     FETCH_INTERVAL_MINUTES = int(os.getenv("FETCH_INTERVAL_MINUTES", "15"))
     ARB_THRESHOLD_PERCENT = float(os.getenv("ARB_THRESHOLD_PERCENT", "1.0"))
     VALUE_THRESHOLD_PERCENT = float(os.getenv("VALUE_THRESHOLD_PERCENT", "3.0"))
+    ENABLE_SCHEDULER = os.getenv("ENABLE_SCHEDULER", "false").lower() == "true"
     SUPPORTED_SPORTS = os.getenv(
         "SUPPORTED_SPORTS",
         "americanfootball_nfl,basketball_nba",

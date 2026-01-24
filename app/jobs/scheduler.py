@@ -59,6 +59,11 @@ def get_status() -> dict:
     }
 
 
+def run_fetch_now(app: Flask) -> None:
+    """Manually trigger an odds fetch + analysis cycle."""
+    _fetch_and_analyze(app)
+
+
 def _fetch_and_analyze(app: Flask) -> None:
     global _last_fetch_time, _last_fetch_success
 
