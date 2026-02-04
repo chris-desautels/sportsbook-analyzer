@@ -4,6 +4,9 @@ import logging
 
 from dotenv import load_dotenv
 
+# Load .env BEFORE importing Config
+load_dotenv()
+
 from flask import Flask
 
 from app.jobs.scheduler import init_scheduler
@@ -13,8 +16,6 @@ from config import Config
 
 def create_app(test_config: dict | None = None) -> Flask:
     """Create and configure the Flask application."""
-
-    load_dotenv()
 
     app = Flask(__name__)
     app.config.from_object(Config)
