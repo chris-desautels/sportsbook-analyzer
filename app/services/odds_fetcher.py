@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import requests
-
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +64,7 @@ def _request_with_retries(
             response.raise_for_status()
             return response
         except requests.RequestException as exc:
-            logger.warning(
-                "Odds API request failed (attempt %s, %s): %s", attempt, context, exc
-            )
+            logger.warning("Odds API request failed (attempt %s, %s): %s", attempt, context, exc)
             if attempt == len(delays):
                 break
             time_to_sleep = delay
@@ -94,18 +91,14 @@ def _parse_odds_payloads(
     sport_key: str, payload: list[dict[str, Any]]
 ) -> list[OddsSnapshotPayload]:
     snapshots: list[OddsSnapshotPayload] = []
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     for event in payload:
-        commence_time = datetime.fromisoformat(
-            event["commence_time"].replace("Z", "+00:00")
-        )
+        commence_time = datetime.fromisoformat(event["commence_time"].replace("Z", "+00:00"))
         for bookmaker in event.get("bookmakers", []):
             for market in bookmaker.get("markets", []):
                 market_type = market.get("key")
-                home_price, away_price, home_point, total_point = _parse_market(
-                    market, event
-                )
+                home_price, away_price, home_point, total_point = _parse_market(market, event)
                 if home_price is None and away_price is None:
                     continue
                 snapshots.append(

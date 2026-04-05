@@ -4,7 +4,6 @@ from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
 
-
 db = SQLAlchemy()
 
 
@@ -100,13 +99,3 @@ class ValueBet(db.Model):
     game = db.relationship("Game", back_populates="value_bets")
 
     __table_args__ = (db.Index("ix_value_bets_game_market", "game_id", "market_type"),)
-
-
-class PinnedGame(db.Model):
-    __tablename__ = "pinned_games"
-
-    id = db.Column(db.Integer, primary_key=True)
-    game_id = db.Column(db.Integer, db.ForeignKey("games.id"), nullable=False, unique=True)
-    pinned_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-
-    game = db.relationship("Game", backref=db.backref("pin", uselist=False))

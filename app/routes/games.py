@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, current_app, render_template
 
-from app.models import ArbitrageOpportunity, Game, OddsSnapshot, PinnedGame, ValueBet
+from app.models import ArbitrageOpportunity, Game, OddsSnapshot, ValueBet
 from app.services.odds_insights import best_lines_from_snapshots, detect_steam_moves
-
 
 bp = Blueprint("games", __name__)
 
@@ -38,8 +37,6 @@ def game_detail(game_id: int):
         min_price_move=current_app.config["STEAM_MIN_PRICE_MOVE"],
         min_point_move=current_app.config["STEAM_MIN_POINT_MOVE"],
     )
-    is_pinned = PinnedGame.query.filter_by(game_id=game_id).first() is not None
-
     return render_template(
         "game_detail.html",
         game=game,
@@ -48,5 +45,4 @@ def game_detail(game_id: int):
         value_bets=value_bets,
         best_lines=best_lines,
         steam_moves=steam_moves,
-        is_pinned=is_pinned,
     )

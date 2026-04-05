@@ -12,7 +12,6 @@ A Flask web application that aggregates odds from multiple sportsbooks to identi
 - **Steam Move Alerts** - Detects coordinated line movements across multiple books
 - **Line Movement Charts** - Visualizes how odds change over time
 - **Smart Scheduling** - Increases fetch frequency as game time approaches
-- **Game Pinning** - Keep important games at the top of your dashboard
 
 ## Tech Stack
 
@@ -79,7 +78,6 @@ See `.env.example` for all available options.
 
 - **Best Lines** - Shows the best available price for each side of every market
 - **Steam Moves** - Amber badge appears when 3+ books move in the same direction within 15 minutes
-- **Pin/Unpin** - Keep important games at the top of your list
 - **Line Movement Chart** - Click into a game to see historical odds changes
 
 ## Development

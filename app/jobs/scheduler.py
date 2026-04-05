@@ -11,7 +11,6 @@ from app.models import ArbitrageOpportunity, Game, OddsSnapshot, Sport, ValueBet
 from app.services.analyzer import MarketOdds, detect_arbitrage, detect_value_bets
 from app.services.odds_fetcher import OddsFetcher
 
-
 logger = logging.getLogger(__name__)
 
 _scheduler: BackgroundScheduler | None = None
@@ -29,7 +28,8 @@ def init_scheduler(app: Flask) -> None:
         return
 
     scheduler = BackgroundScheduler()
-    interval_minutes = _select_fetch_interval(app)
+    with app.app_context():
+        interval_minutes = _select_fetch_interval(app)
     scheduler.add_job(
         func=lambda: _fetch_and_analyze(app),
         trigger="interval",
@@ -61,11 +61,6 @@ def get_status() -> dict:
         "next_fetch_time": next_run_time.isoformat() if next_run_time else None,
         "scheduler_running": _scheduler is not None,
     }
-
-
-def run_fetch_now(app: Flask) -> None:
-    """Manually trigger an odds fetch + analysis cycle."""
-    _fetch_and_analyze(app)
 
 
 def _fetch_and_analyze(app: Flask) -> None:
@@ -152,6 +147,8 @@ def _run_detection(app: Flask) -> None:
             seen.add(key)
             if row.home_price is None or row.away_price is None:
                 continue
+            if row.market_type != "h2h":
+                continue
             market_odds.append(
                 MarketOdds(
                     bookmaker=row.bookmaker,
@@ -192,9 +189,7 @@ def _run_detection(app: Flask) -> None:
 def _cleanup_old_data(app: Flask) -> None:
     with app.app_context():
         cutoff = datetime.utcnow() - timedelta(days=30)
-        deleted = OddsSnapshot.query.filter(
-            OddsSnapshot.timestamp < cutoff
-        ).delete()
+        deleted = OddsSnapshot.query.filter(OddsSnapshot.timestamp < cutoff).delete()
         db.session.commit()
         logger.info("Deleted %s old odds snapshots.", deleted)
 
