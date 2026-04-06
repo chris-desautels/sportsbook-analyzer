@@ -1,7 +1,5 @@
 # Sports Betting Value Finder
 
-[![CI](https://github.com/SaitamaStack/betting-project/actions/workflows/ci.yml/badge.svg)](https://github.com/SaitamaStack/betting-project/actions/workflows/ci.yml)
-
 A Flask web application that aggregates odds from multiple sportsbooks to identify profitable betting opportunities. Features include arbitrage detection, value bet identification, steam move alerts, and line movement tracking.
 
 ## Features
