@@ -1,5 +1,6 @@
 # Sports Betting Value Finder
 
+
 A Flask web application that aggregates odds from multiple sportsbooks to identify profitable betting opportunities. Features include arbitrage detection, value bet identification, steam move alerts, and line movement tracking.
 
 ## Features
