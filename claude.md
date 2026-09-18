@@ -1,6 +1,6 @@
 # Project Context
 
-**Last synced:** 2026-09-17 22:00:12
+**Last synced:** 2026-09-17 22:04:04
 **Branch:** master
 
 ## Project Structure
@@ -69,6 +69,7 @@
 
 ## Recent Commits
 ```
+d0d159a Update last synced timestamp in claude.md
 f0380b8 Update claude.md
 e902d7b Update last synced timestamp in claude.md and remove _private_demo_seed.py from project structure
 9c40a42 Add demo mode configuration to .env.example, update app initialization to enforce scheduler settings, and introduce seed_demo.py for demo data population. Update README with demo usage instructions and add render.yaml for deployment configuration.
@@ -78,7 +79,6 @@ feaa035 Remove game pinning feature and related code, update dashboard and game 
 7424bee Load environment variables before importing Config in app initialization
 b8ed462 Add Docker support with Dockerfile and docker-compose.yml, create .dockerignore and .env.example files, and update README for setup instructions
 e9ca38c Add configuration for fetch intervals, steam detection, and implement pinning feature for games
-375858e Restructure project layout
 ```
 
 ## Notes
