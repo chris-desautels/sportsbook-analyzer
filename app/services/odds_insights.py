@@ -17,9 +17,7 @@ class BestLine:
 
 def latest_snapshots_for_game(game_id: int) -> list[OddsSnapshot]:
     snapshots = (
-        OddsSnapshot.query.filter_by(game_id=game_id)
-        .order_by(OddsSnapshot.timestamp.desc())
-        .all()
+        OddsSnapshot.query.filter_by(game_id=game_id).order_by(OddsSnapshot.timestamp.desc()).all()
     )
     return _dedupe_latest_snapshots(snapshots)
 
@@ -53,9 +51,7 @@ def detect_steam_moves(
 ) -> list[dict]:
     cutoff = datetime.utcnow() - timedelta(minutes=window_minutes)
     recent = [snap for snap in snapshots if snap.timestamp >= cutoff]
-    grouped: dict[str, dict[str, list[OddsSnapshot]]] = defaultdict(
-        lambda: defaultdict(list)
-    )
+    grouped: dict[str, dict[str, list[OddsSnapshot]]] = defaultdict(lambda: defaultdict(list))
     for snap in recent:
         grouped[snap.market_type][snap.bookmaker].append(snap)
 
@@ -63,15 +59,11 @@ def detect_steam_moves(
     for market_type, by_book in grouped.items():
         if market_type == "totals":
             moves = _detect_point_moves(by_book, "total_point", min_point_move)
-            steam_moves.extend(
-                _summarize_moves(market_type, "total", moves, min_books)
-            )
+            steam_moves.extend(_summarize_moves(market_type, "total", moves, min_books))
             continue
         if market_type == "spreads":
             moves = _detect_point_moves(by_book, "home_point", min_point_move)
-            steam_moves.extend(
-                _summarize_moves(market_type, "spread", moves, min_books)
-            )
+            steam_moves.extend(_summarize_moves(market_type, "spread", moves, min_books))
             continue
 
         home_moves = _detect_price_moves(by_book, "home_price", min_price_move)

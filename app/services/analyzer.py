@@ -95,9 +95,7 @@ def detect_value_bets(
         return []
 
     df = pd.DataFrame(entries)
-    consensus = (
-        df.groupby(["market_type", "side"])["implied_prob"].mean().reset_index()
-    )
+    consensus = df.groupby(["market_type", "side"])["implied_prob"].mean().reset_index()
     merged = df.merge(consensus, on=["market_type", "side"], suffixes=("", "_consensus"))
     merged["edge"] = (merged["implied_prob_consensus"] - merged["implied_prob"]) * 100
     merged["consensus_price"] = merged["implied_prob_consensus"].apply(

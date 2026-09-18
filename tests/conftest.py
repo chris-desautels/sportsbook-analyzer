@@ -31,7 +31,7 @@ def client(app):
 @pytest.fixture()
 def sample_game(app):
     """Create a sample game and return its ID (not the ORM object).
-    
+
     Returns the game ID to avoid SQLAlchemy DetachedInstanceError when
     the game object is accessed outside the app context.
     """

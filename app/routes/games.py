@@ -15,9 +15,7 @@ def game_detail(game_id: int):
         abort(404)
 
     odds = (
-        OddsSnapshot.query.filter_by(game_id=game_id)
-        .order_by(OddsSnapshot.timestamp.desc())
-        .all()
+        OddsSnapshot.query.filter_by(game_id=game_id).order_by(OddsSnapshot.timestamp.desc()).all()
     )
     arbitrage = (
         ArbitrageOpportunity.query.filter_by(game_id=game_id)
@@ -25,9 +23,7 @@ def game_detail(game_id: int):
         .all()
     )
     value_bets = (
-        ValueBet.query.filter_by(game_id=game_id)
-        .order_by(ValueBet.detected_at.desc())
-        .all()
+        ValueBet.query.filter_by(game_id=game_id).order_by(ValueBet.detected_at.desc()).all()
     )
     best_lines = best_lines_from_snapshots(odds)
     steam_moves = detect_steam_moves(

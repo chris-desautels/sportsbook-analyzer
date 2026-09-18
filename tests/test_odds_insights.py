@@ -144,9 +144,7 @@ def test_detect_steam_moves_price(app, sample_game):
         min_point_move=0.5,
     )
     assert any(
-        move["market_type"] == "h2h"
-        and move["side"] == "home"
-        and move["direction"] == "up"
+        move["market_type"] == "h2h" and move["side"] == "home" and move["direction"] == "up"
         for move in steam_moves
     )
 
@@ -154,7 +152,7 @@ def test_detect_steam_moves_price(app, sample_game):
 def test_detect_steam_moves_respects_thresholds():
     """Test that steam detection respects min_price_move and min_books thresholds."""
     now = datetime.utcnow()
-    
+
     # Test 1: Small moves (15 points) should NOT trigger steam detection
     # because they're below the min_price_move=20 threshold
     small_move_snapshots = []
@@ -253,5 +251,6 @@ def test_detect_steam_moves_respects_thresholds():
         min_price_move=20,
         min_point_move=0.5,
     )
-    assert any(move["side"] == "home" for move in steam_moves), \
-        "3 books with large moves should trigger steam detection"
+    assert any(
+        move["side"] == "home" for move in steam_moves
+    ), "3 books with large moves should trigger steam detection"

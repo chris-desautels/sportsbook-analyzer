@@ -19,9 +19,7 @@ def opportunities():
         .order_by(ArbitrageOpportunity.profit_percentage.desc())
         .all()
     )
-    value_bets = (
-        ValueBet.query.order_by(ValueBet.edge_percentage.desc()).all()
-    )
+    value_bets = ValueBet.query.order_by(ValueBet.edge_percentage.desc()).all()
     return jsonify(
         {
             "arbitrage": [
@@ -87,9 +85,7 @@ def games():
 @bp.get("/games/<int:game_id>/history")
 def game_history(game_id: int):
     odds = (
-        OddsSnapshot.query.filter_by(game_id=game_id)
-        .order_by(OddsSnapshot.timestamp.asc())
-        .all()
+        OddsSnapshot.query.filter_by(game_id=game_id).order_by(OddsSnapshot.timestamp.asc()).all()
     )
     return jsonify(
         [
