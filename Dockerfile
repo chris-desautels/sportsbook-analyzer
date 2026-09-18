@@ -60,5 +60,9 @@ EXPOSE 5000
 # -----------------------------------------------------------------------------
 # When the container starts, run this command
 # Using gunicorn (production WSGI server) instead of Flask's dev server
-# --bind 0.0.0.0:5000 means "listen on all network interfaces, port 5000"
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]
+# Bind to the PORT the platform assigns at runtime (Render, etc. set this env
+# var and expect the app to listen on it), falling back to 5000 for plain
+# `docker run` where no PORT is set. This must run through a shell (sh -c) so
+# $PORT is actually expanded — the exec-form CMD used previously passed the
+# literal string "$PORT" to gunicorn instead of its value.
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} run:app"]

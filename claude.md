@@ -1,6 +1,6 @@
 # Project Context
 
-**Last synced:** 2026-04-05 08:19:13
+**Last synced:** 2026-09-17 18:29:42
 **Branch:** master
 
 ## Project Structure
@@ -29,6 +29,7 @@
 ./README.md
 ./__pycache__
 ./__pycache__/config.cpython-312.pyc
+./_private_demo_seed.py
 ./app
 ./app/__init__.py
 ./app/__pycache__
@@ -64,11 +65,11 @@
 ./app/services/odds_fetcher.py
 ./app/services/odds_insights.py
 ./app/static
-./app/static/js
 ```
 
 ## Recent Commits
 ```
+23cd708 Add claude.md for project context and structure, update .gitignore to exclude _private_demo_seed.py, and remove CI badge from README.md
 feaa035 Remove game pinning feature and related code, update dashboard and game detail templates accordingly, and clean up unused imports and functions.
 7424bee Load environment variables before importing Config in app initialization
 b8ed462 Add Docker support with Dockerfile and docker-compose.yml, create .dockerignore and .env.example files, and update README for setup instructions

@@ -36,6 +36,13 @@ def create_app(test_config: dict | None = None) -> Flask:
     app.register_blueprint(games_bp)
     app.register_blueprint(api_bp)
 
+    if app.config.get("DEMO_MODE") and app.config.get("ENABLE_SCHEDULER"):
+        logging.getLogger(__name__).warning(
+            "DEMO_MODE is enabled; forcing ENABLE_SCHEDULER off so seeded demo "
+            "data is never mixed with live Odds API fetches."
+        )
+        app.config["ENABLE_SCHEDULER"] = False
+
     if not app.config.get("TESTING") and app.config.get("ENABLE_SCHEDULER"):
         init_scheduler(app)
 

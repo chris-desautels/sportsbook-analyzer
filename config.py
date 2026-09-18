@@ -17,12 +17,13 @@ class Config:
     FETCH_INTERVAL_NEAR_HOURS = float(os.getenv("FETCH_INTERVAL_NEAR_HOURS", "3"))
     FETCH_INTERVAL_NEAR_MINUTES = int(os.getenv("FETCH_INTERVAL_NEAR_MINUTES", "15"))
     FETCH_INTERVAL_IMMINENT_HOURS = float(os.getenv("FETCH_INTERVAL_IMMINENT_HOURS", "1"))
-    FETCH_INTERVAL_IMMINENT_MINUTES = int(
-        os.getenv("FETCH_INTERVAL_IMMINENT_MINUTES", "5")
-    )
+    FETCH_INTERVAL_IMMINENT_MINUTES = int(os.getenv("FETCH_INTERVAL_IMMINENT_MINUTES", "5"))
     ARB_THRESHOLD_PERCENT = float(os.getenv("ARB_THRESHOLD_PERCENT", "1.0"))
     VALUE_THRESHOLD_PERCENT = float(os.getenv("VALUE_THRESHOLD_PERCENT", "3.0"))
     ENABLE_SCHEDULER = os.getenv("ENABLE_SCHEDULER", "false").lower() == "true"
+    # Gates seed_demo.py and forces the scheduler off (see app/__init__.py) so a
+    # demo deployment never mixes seeded fixture data with live Odds API rows.
+    DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
     SUPPORTED_SPORTS = os.getenv(
         "SUPPORTED_SPORTS",
         "americanfootball_nfl,basketball_nba",

@@ -1,0 +1,47 @@
+# =============================================================================
+# render.yaml - Render Blueprint for the PORTFOLIO DEMO deployment
+# =============================================================================
+# https://render.com/docs/blueprint-spec
+#
+# This deploys a demo instance only, reusing the existing Dockerfile as-is.
+# It overrides the container's start command to reseed fixture data every
+# time the container boots (Render's free-tier filesystem is ephemeral, so
+# the SQLite DB is wiped on every cold start, redeploy, and spin-down/spin-up
+# cycle):
+#
+#   python seed_demo.py && gunicorn --bind 0.0.0.0:${PORT:-5000} run:app
+#
+# Render assigns the port at runtime via the PORT env var (it does not
+# default to 5000), so gunicorn must bind to $PORT rather than a hardcoded
+# port or the platform's port scan will fail. PORT is not set here in
+# envVars — Render provides it automatically for web services.
+#
+# Why this can't seed a "real" deploy by accident:
+#   - seed_demo.py is a no-op unless DEMO_MODE=true is set in the environment.
+#     A separate, non-demo Render service that doesn't set DEMO_MODE (most
+#     services created from this repo without this file) never seeds.
+#   - This file forces ENABLE_SCHEDULER=false, and app/__init__.py also
+#     force-disables the scheduler whenever DEMO_MODE=true, so this demo
+#     service never calls the live Odds API even if that variable is later
+#     changed in the Render dashboard.
+#   - There is deliberately no ODDS_API_KEY here — live odds collection
+#     cannot run without one, by design for this demo.
+#
+# See README.md ("Live Demo" section) for what this demo is and isn't.
+# =============================================================================
+
+services:
+  - type: web
+    name: betting-value-finder-demo
+    runtime: docker
+    plan: free
+    dockerCommand: 'sh -c "python seed_demo.py && gunicorn --bind 0.0.0.0:${PORT:-5000} run:app"'
+    healthCheckPath: /
+    envVars:
+      - key: DEMO_MODE
+        value: "true"
+      - key: ENABLE_SCHEDULER
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      # ODDS_API_KEY intentionally omitted: this demo never fetches live odds.
