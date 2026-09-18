@@ -1,11 +1,12 @@
 # Project Context
 
-**Last synced:** 2026-09-17 22:04:04
+**Last synced:** 2026-09-17 22:20:02
 **Branch:** master
 
 ## Project Structure
 ```
 .
+./.coverage
 ./.dockerignore
 ./.env
 ./.env.example
@@ -64,11 +65,11 @@
 ./app/services/odds_fetcher.py
 ./app/services/odds_insights.py
 ./app/static
-./app/static/js
 ```
 
 ## Recent Commits
 ```
+782f224 Add .coverage file and update CI workflow to use python -m pytest for test execution
 d0d159a Update last synced timestamp in claude.md
 f0380b8 Update claude.md
 e902d7b Update last synced timestamp in claude.md and remove _private_demo_seed.py from project structure
@@ -78,7 +79,6 @@ fbd8b39 Update README.md
 feaa035 Remove game pinning feature and related code, update dashboard and game detail templates accordingly, and clean up unused imports and functions.
 7424bee Load environment variables before importing Config in app initialization
 b8ed462 Add Docker support with Dockerfile and docker-compose.yml, create .dockerignore and .env.example files, and update README for setup instructions
-e9ca38c Add configuration for fetch intervals, steam detection, and implement pinning feature for games
 ```
 
 ## Notes
