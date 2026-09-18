@@ -1,6 +1,6 @@
 # Project Context
 
-**Last synced:** 2026-09-17 21:45:13
+**Last synced:** 2026-09-17 21:45:55
 **Branch:** master
 
 ## Project Structure
@@ -69,6 +69,7 @@
 
 ## Recent Commits
 ```
+09db58e Update last synced timestamp in claude.md and remove _private_demo_seed.py from project structure
 8471979 Add demo mode configuration to .env.example, update app initialization to enforce scheduler settings, and introduce seed_demo.py for demo data population. Update README with demo usage instructions and add render.yaml for deployment configuration.
 23cd708 Add claude.md for project context and structure, update .gitignore to exclude _private_demo_seed.py, and remove CI badge from README.md
 feaa035 Remove game pinning feature and related code, update dashboard and game detail templates accordingly, and clean up unused imports and functions.
