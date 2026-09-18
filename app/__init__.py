@@ -7,11 +7,11 @@ from dotenv import load_dotenv
 # Load .env BEFORE importing Config
 load_dotenv()
 
-from flask import Flask
+from flask import Flask  # noqa: E402
 
-from app.jobs.scheduler import init_scheduler
-from app.models import db
-from config import Config
+from app.jobs.scheduler import init_scheduler  # noqa: E402
+from app.models import db  # noqa: E402
+from config import Config  # noqa: E402
 
 
 def create_app(test_config: dict | None = None) -> Flask:
@@ -46,12 +46,11 @@ def create_app(test_config: dict | None = None) -> Flask:
     if not app.config.get("TESTING") and app.config.get("ENABLE_SCHEDULER"):
         init_scheduler(app)
 
-    if not app.config.get("TESTING"):
-        if not app.config.get("SECRET_KEY"):
-            raise ValueError(
-                "SECRET_KEY environment variable is required. "
-                'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"'
-            )
+    if not app.config.get("TESTING") and not app.config.get("SECRET_KEY"):
+        raise ValueError(
+            "SECRET_KEY environment variable is required. "
+            'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"'
+        )
 
     if not app.config.get("ODDS_API_KEY"):
         logging.getLogger(__name__).warning(

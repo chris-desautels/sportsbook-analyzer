@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import requests
@@ -91,7 +91,7 @@ def _parse_odds_payloads(
     sport_key: str, payload: list[dict[str, Any]]
 ) -> list[OddsSnapshotPayload]:
     snapshots: list[OddsSnapshotPayload] = []
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     for event in payload:
         commence_time = datetime.fromisoformat(event["commence_time"].replace("Z", "+00:00"))

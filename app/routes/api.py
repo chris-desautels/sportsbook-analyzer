@@ -8,7 +8,6 @@ from app.jobs.scheduler import get_status
 from app.models import ArbitrageOpportunity, Game, OddsSnapshot, ValueBet
 from app.services.odds_insights import latest_snapshots_for_game
 
-
 bp = Blueprint("api", __name__, url_prefix="/api")
 
 

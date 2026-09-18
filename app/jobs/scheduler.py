@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from datetime import datetime, timedelta
-from typing import Iterable
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
